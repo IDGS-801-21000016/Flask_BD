@@ -5,14 +5,30 @@ from flask import g
 from flask_wtf.csrf import CSRFProtect
 from config import DevConfig, Config
 app = Flask(__name__)
+from models import db
+from forms import UserForm
+from models import Alumnos
+
+
 app.config.from_object(DevConfig)
+csrf = CSRFProtect(app)
 
-csrf = CSRFProtect(Config)
 
-
-@app.route('/')
+@app.route('/', methods=['GET', 'POST'])
 def index():
-	return render_template('index.html')
+        usuario_form = UserForm(request.form)
+        if request.method == 'POST':
+                print("Metodo POST")
+                try:
+                        alumno = Alumnos(nombre=usuario_form.nombre.data, apaterno=usuario_form.a_paterno.data, email=usuario_form.email.data)
+                        db.session.add(alumno)
+                        db.session.commit()
+                        print("Alumno guardado")
+                except Exception as e:
+                        print(f"Error en la base de datos: {e}")
+                        db.session.rollback()
+                        
+        return render_template('index.html', form=usuario_form)
 
 @app.route('/alumnos', methods=['GET', 'POST'])
 def alumnos():
@@ -48,5 +64,8 @@ def error(error):
 
 
 if __name__ == '__main__':
-	csrf.init_app(app)
-	app.run(debug=True)
+        csrf.init_app(app)
+        db.init_app(app)            
+        with app.app_context():
+                db.create_all()
+        app.run(debug=True)
