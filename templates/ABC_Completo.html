@@ -1,0 +1,56 @@
+{% extends "layout2.html" %} {% import '_macros.html' as macros %} {%
+block content %}
+
+<div class="container">
+	<div class="row">
+		<h3>Alumnos</h3>
+    <h4>
+      <a href="/">
+        <span class="glyphicon glyphicon-chevron-left"></span>
+        agregar nuevo
+      </a>
+    </h4>
+		<table class="table table-striped table-bordered">
+			<thead>
+				<tr>
+					<th>Nombre</th>
+					<th>Apaterno</th>
+					<th>Correp</th>
+					<th>Eliminar</th>
+					<th>Modificar</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for a in alum %}
+				<tr>
+					<td>{{a.nombre}}</td>
+					<td>{{a.apaterno}}</td>
+					<td>{{a.email}}</td>
+					<td>
+					<a href="/eliminar?id={{a.id}}" class="btn btn-danger">
+						<i
+						class="icon-trash icon-white" 
+						></i>
+						Eliminar
+					</a>
+						</form>
+					</td>
+					<td>
+						<a href="/modificar?id={{a.id}}" class="btn btn-warning">
+              
+							<i
+							class="icon-pencil icon-white"
+							></i>
+							Modificar
+          </a>
+					</td>
+				</tr>
+
+        {% endfor %}
+			</tbody>
+		</table>
+	</div>
+</div>
+
+
+{% endblock %}

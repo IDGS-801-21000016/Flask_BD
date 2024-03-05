@@ -1,9 +1,9 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect, url_for
 from forms import UserForm
 from flask import flash 
 from flask import g
 from flask_wtf.csrf import CSRFProtect
-from config import DevConfig, Config
+from config import DevConfig
 app = Flask(__name__)
 from models import db
 from forms import UserForm
@@ -17,6 +17,7 @@ csrf = CSRFProtect(app)
 @app.route('/', methods=['GET', 'POST'])
 def index():
         usuario_form = UserForm(request.form)
+        # all_alumnos = Alumnos.query.all()
         if request.method == 'POST':
                 print("Metodo POST")
                 try:
@@ -26,9 +27,63 @@ def index():
                         print("Alumno guardado")
                 except Exception as e:
                         print(f"Error en la base de datos: {e}")
-                        db.session.rollback()
-                        
+                        db.session.rollback()                         
         return render_template('index.html', form=usuario_form)
+
+@app.route('/ABC_Completo', methods=['GET', 'POST'])
+def Abc():
+        alum = Alumnos.query.all()
+        return render_template('ABC_Completo.html', alum=alum)
+
+@app.route('/eliminar', methods=['GET', 'POST'])
+def eliminar():
+        create_form = UserForm(request.form)
+        if request.method == 'GET':
+                id = request.args.get('id')
+                alumno = Alumnos.query.filter_by(id=id).first()
+                create_form.id.data = request.args.get('id')
+                create_form.nombre.data = alumno.nombre
+                create_form.a_paterno.data = alumno.apaterno
+                create_form.email.data = alumno.email
+        if request.method == 'POST':
+                try:
+                        id = create_form.id.data
+                        alumno = Alumnos.query.filter_by(id=id).first()
+                        db.session.delete(alumno)
+                        db.session.commit()
+                        print("Alumno eliminado")
+                except Exception as e:
+                        print(f"Error en la base de datos: {e}")
+                        db.session.rollback()
+                return redirect('/ABC_Completo')
+        return render_template('eliminar.html', form=create_form)
+
+@app.route('/modificar', methods=['GET', 'POST'])
+def modificar():
+        create_form = UserForm(request.form)
+        if request.method == 'GET':
+                id = request.args.get('id')
+                alumno = Alumnos.query.filter_by(id=id).first()
+                create_form.id.data = request.args.get('id')
+                create_form.nombre.data = alumno.nombre
+                create_form.a_paterno.data = alumno.apaterno
+                create_form.email.data = alumno.email
+        if request.method == 'POST':
+                try:
+                        id = create_form.id.data
+                        alumno = Alumnos.query.filter_by(id=id).first()
+                        alumno.nombre = create_form.nombre.data
+                        alumno.apaterno = create_form.a_paterno.data
+                        alumno.email = create_form.email.data
+                        db.session.commit()
+                        print("Alumno modificado")
+                except Exception as e:
+                        print(f"Error en la base de datos: {e}")
+                        db.session.rollback()
+                return redirect('/ABC_Completo')
+        return render_template('modificar.html', form=create_form)
+                
+                
 
 @app.route('/alumnos', methods=['GET', 'POST'])
 def alumnos():
@@ -41,8 +96,6 @@ def alumnos():
         m_apellido = None
         edad = None
         email = None
-
-
         if request.method == 'POST' and usuario_form.validate():
                 nombre = usuario_form.nombre.data
                 m_apellido = usuario_form.a_materno.data
